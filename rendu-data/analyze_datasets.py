@@ -28,7 +28,6 @@ from collections import Counter
 # Configuration — adapte les chemins selon l'emplacement réel des fichiers
 # ---------------------------------------------------------------------------
 FINANCE_DATASET_PATH = "../datasets/finance_dataset_final.json"
-MEDICAL_DATASET_PATH = "../datasets/medical_dataset.json"  # adapte si nom différent
 OUTPUT_DIR = "./cleaned"
 
 SUSPICIOUS_PATTERNS = [
@@ -181,12 +180,6 @@ def main():
     finance_analysis = analyze_dataset("Dataset financier (finance_dataset_final.json)", finance_data)
     if finance_analysis:
         clean_dataset(finance_data, finance_analysis, os.path.join(OUTPUT_DIR, "finance_dataset_cleaned.json"))
-
-    # 2. Dataset médical
-    medical_data = load_dataset(MEDICAL_DATASET_PATH)
-    medical_analysis = analyze_dataset("Dataset médical", medical_data)
-    if medical_analysis:
-        clean_dataset(medical_data, medical_analysis, os.path.join(OUTPUT_DIR, "medical_dataset_cleaned.json"))
 
     print(f"\n{'=' * 60}")
     print("TERMINÉ — copie les chiffres ci-dessus dans rendu/data/RAPPORT_QUALITE.md")
