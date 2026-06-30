@@ -1,424 +1,706 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TechCorp — Assistant Financier</title>
-    <style>
-      :root {
-        --ink: #10151c;
-        --panel: #161d27;
-        --panel-2: #1d2530;
-        --line: #2a3441;
-        --paper: #f4f1ea;
-        --gold: #c9a24b;
-        --gold-dim: #8a7239;
-        --green: #4caf7d;
-        --red: #d4685a;
-        --text: #e8e4da;
-        --text-dim: #8d96a3;
-        --serif: "Iowan Old Style", "Georgia", "Times New Roman", serif;
-        --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechCorp — Assistant Financier</title>
+<style>
+  :root {
+    --ink: #10151c;
+    --panel: #161d27;
+    --panel-2: #1d2530;
+    --sidebar: #0c1019;
+    --line: #2a3441;
+    --paper: #f4f1ea;
+    --gold: #c9a24b;
+    --gold-dim: #8a7239;
+    --green: #4caf7d;
+    --red: #d4685a;
+    --text: #e8e4da;
+    --text-dim: #8d96a3;
+    --hover: #20283380;
+    --serif: 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
 
-      * {
-        box-sizing: border-box;
-      }
+  html[data-theme="light"] {
+    --ink: #faf8f3;
+    --panel: #ffffff;
+    --panel-2: #f0ece2;
+    --sidebar: #efe9dc;
+    --line: #ddd5c2;
+    --paper: #1c1f26;
+    --gold: #a87f2e;
+    --gold-dim: #8a7239;
+    --green: #2f8a5b;
+    --red: #b8473c;
+    --text: #232730;
+    --text-dim: #6b6557;
+    --hover: #e4ddcb80;
+  }
 
-      body {
-        margin: 0;
-        background: var(--ink);
-        color: var(--text);
-        font-family: var(--mono);
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
+  * { box-sizing: border-box; }
 
-      header {
-        border-bottom: 1px solid var(--line);
-        padding: 18px 28px;
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        background: linear-gradient(180deg, #131922, var(--ink));
-      }
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--text);
+    font-family: var(--mono);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+    transition: background 0.2s, color 0.2s;
+  }
 
-      header h1 {
-        font-family: var(--serif);
-        font-size: 1.3rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
-        margin: 0;
-        color: var(--paper);
-      }
+  /* ---------- SIDEBAR ---------- */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--sidebar);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.25s ease;
+  }
 
-      header .ticker {
-        font-size: 0.7rem;
-        color: var(--gold-dim);
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        margin-top: 2px;
-      }
+  #sidebar.collapsed { margin-left: -260px; }
 
-      #status {
-        font-size: 0.72rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+  .sidebar-header {
+    padding: 18px 16px 12px;
+  }
 
-      #status .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--text-dim);
-        transition: background 0.3s;
-      }
+  .brand {
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    color: var(--paper);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-      #status.connected .dot {
-        background: var(--green);
-        box-shadow: 0 0 8px var(--green);
-      }
-      #status.disconnected .dot {
-        background: var(--red);
-        box-shadow: 0 0 8px var(--red);
-      }
-      #status.connected .label {
-        color: var(--green);
-      }
-      #status.disconnected .label {
-        color: var(--red);
-      }
+  .brand .mark { color: var(--gold); }
 
-      main {
-        flex: 1;
-        overflow-y: auto;
-        padding: 28px;
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        max-width: 760px;
-        width: 100%;
-        margin: 0 auto;
-      }
+  .new-chat-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s, border-color 0.15s;
+  }
 
-      .empty-state {
-        margin: auto;
-        text-align: center;
-        color: var(--text-dim);
-        max-width: 420px;
-      }
+  .new-chat-btn:hover { background: var(--hover); border-color: var(--gold); }
 
-      .empty-state .mark {
-        font-family: var(--serif);
-        font-size: 2rem;
-        color: var(--gold);
-        margin-bottom: 8px;
-      }
+  .conv-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
 
-      .empty-state p {
-        font-size: 0.85rem;
-        line-height: 1.6;
-      }
+  .conv-section-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 12px 6px 6px;
+  }
 
-      .msg {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        max-width: 86%;
-        animation: rise 0.25s ease;
-      }
+  .conv-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    transition: background 0.12s, color 0.12s;
+  }
 
-      @keyframes rise {
-        from {
-          opacity: 0;
-          transform: translateY(6px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
+  .conv-item:hover { background: var(--hover); color: var(--text); }
+  .conv-item.active { background: var(--panel-2); color: var(--paper); }
 
-      .msg.user {
-        align-self: flex-end;
-        align-items: flex-end;
-      }
-      .msg.assistant {
-        align-self: flex-start;
-        align-items: flex-start;
-      }
+  .conv-item .conv-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-      .msg .tag {
-        font-size: 0.65rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--text-dim);
-      }
+  .conv-item .conv-delete {
+    opacity: 0;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: opacity 0.12s, color 0.12s, background 0.12s;
+  }
 
-      .msg.user .tag {
-        color: var(--gold-dim);
-      }
+  .conv-item:hover .conv-delete { opacity: 1; }
+  .conv-item .conv-delete:hover { color: var(--red); background: var(--hover); }
 
-      .bubble {
-        padding: 12px 16px;
-        border-radius: 3px;
-        line-height: 1.55;
-        font-size: 0.9rem;
-        white-space: pre-wrap;
-      }
+  .sidebar-footer {
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 
-      .msg.user .bubble {
-        background: var(--panel-2);
-        border: 1px solid var(--line);
-        color: var(--paper);
-      }
+  .theme-toggle {
+    display: flex;
+    background: var(--panel-2);
+    border-radius: 20px;
+    padding: 3px;
+    gap: 2px;
+  }
 
-      .msg.assistant .bubble {
-        background: transparent;
-        border-left: 2px solid var(--gold-dim);
-        padding-left: 14px;
-        color: var(--text);
-      }
+  .theme-toggle button {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    padding: 5px 10px;
+    border-radius: 16px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+    transition: background 0.15s, color 0.15s;
+  }
 
-      .msg.error .bubble {
-        border-left-color: var(--red);
-        color: var(--red);
-      }
+  .theme-toggle button.active {
+    background: var(--gold);
+    color: var(--ink);
+  }
 
-      .thinking {
-        align-self: flex-start;
-        color: var(--text-dim);
-        font-size: 0.8rem;
-        padding-left: 16px;
-        border-left: 2px solid var(--line);
-      }
+  /* ---------- MAIN ---------- */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
 
-      .thinking::after {
-        content: "";
-        display: inline-block;
-        width: 4px;
-        height: 4px;
-        background: var(--gold);
-        border-radius: 50%;
-        margin-left: 6px;
-        animation: blink 1s infinite;
-      }
+  header {
+    border-bottom: 1px solid var(--line);
+    padding: 16px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--ink);
+  }
 
-      @keyframes blink {
-        50% {
-          opacity: 0.2;
-        }
-      }
+  header .left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-      footer {
-        border-top: 1px solid var(--line);
-        padding: 18px 28px 24px;
-        background: var(--ink);
-      }
+  #sidebarToggle {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+  }
 
-      form {
-        max-width: 760px;
-        margin: 0 auto;
-        display: flex;
-        gap: 10px;
-      }
+  #sidebarToggle:hover { background: var(--hover); }
 
-      textarea {
-        flex: 1;
-        resize: none;
-        background: var(--panel);
-        border: 1px solid var(--line);
-        color: var(--text);
-        font-family: var(--mono);
-        font-size: 0.9rem;
-        padding: 12px 14px;
-        border-radius: 3px;
-        outline: none;
-        height: 46px;
-        line-height: 1.4;
-      }
+  header h1 {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--paper);
+  }
 
-      textarea:focus {
-        border-color: var(--gold-dim);
-      }
+  header .ticker {
+    font-size: 0.65rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
 
-      button {
-        background: var(--gold);
-        color: var(--ink);
-        border: none;
-        padding: 0 22px;
-        font-family: var(--mono);
-        font-weight: 600;
-        font-size: 0.8rem;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        border-radius: 3px;
-        cursor: pointer;
-        transition: background 0.15s;
-      }
+  #status {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-      button:hover:not(:disabled) {
-        background: #ddb45f;
-      }
-      button:disabled {
-        background: var(--panel-2);
-        color: var(--text-dim);
-        cursor: not-allowed;
-      }
+  #status .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-dim);
+  }
 
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: var(--panel-2);
-        border-radius: 4px;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
+  #status.connected .dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  #status.disconnected .dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  #status.connected .label { color: var(--green); }
+  #status.disconnected .label { color: var(--red); }
+
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  main > .inner {
+    max-width: 760px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .empty-state {
+    margin: auto;
+    text-align: center;
+    color: var(--text-dim);
+    max-width: 420px;
+  }
+
+  .empty-state .mark { font-family: var(--serif); font-size: 2rem; color: var(--gold); margin-bottom: 8px; }
+  .empty-state p { font-size: 0.85rem; line-height: 1.6; }
+
+  .suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .suggestion-chip {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text-dim);
+    padding: 7px 13px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: var(--mono);
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .suggestion-chip:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 86%;
+    animation: rise 0.25s ease;
+  }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .msg.user { align-self: flex-end; align-items: flex-end; }
+  .msg.assistant { align-self: flex-start; align-items: flex-start; }
+
+  .msg .tag { font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
+  .msg.user .tag { color: var(--gold-dim); }
+
+  .bubble { padding: 12px 16px; border-radius: 10px; line-height: 1.55; font-size: 0.9rem; white-space: pre-wrap; }
+
+  .msg.user .bubble { background: var(--panel-2); border: 1px solid var(--line); color: var(--paper); border-bottom-right-radius: 3px; }
+  .msg.assistant .bubble { background: transparent; border-left: 2px solid var(--gold-dim); padding-left: 14px; border-radius: 0; color: var(--text); }
+  .msg.error .bubble { border-left-color: var(--red); color: var(--red); }
+
+  .thinking {
+    align-self: flex-start;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    padding-left: 16px;
+    border-left: 2px solid var(--line);
+  }
+
+  .thinking::after {
+    content: ''; display: inline-block; width: 4px; height: 4px;
+    background: var(--gold); border-radius: 50%; margin-left: 6px;
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0.2; } }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 16px 28px 22px;
+    background: var(--ink);
+  }
+
+  form { max-width: 760px; margin: 0 auto; display: flex; gap: 10px; }
+
+  textarea {
+    flex: 1; resize: none;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    padding: 12px 14px;
+    border-radius: 8px;
+    outline: none;
+    height: 46px;
+    line-height: 1.4;
+  }
+
+  textarea:focus { border-color: var(--gold-dim); }
+
+  button.send {
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    padding: 0 22px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  button.send:hover:not(:disabled) { background: #ddb45f; }
+  button.send:disabled { background: var(--panel-2); color: var(--text-dim); cursor: not-allowed; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--panel-2); border-radius: 4px; }
+
+  @media (max-width: 720px) {
+    #sidebar { position: fixed; z-index: 10; height: 100%; }
+    #sidebar:not(.collapsed) { margin-left: 0; }
+    #sidebar.collapsed { margin-left: -260px; }
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="brand"><span class="mark">§</span> TechCorp Finance</div>
+    <button class="new-chat-btn" id="newChatBtn">＋ Nouvelle conversation</button>
+  </div>
+  <div class="conv-list" id="convList"></div>
+  <div class="sidebar-footer">
+    <div class="theme-toggle">
+      <button id="darkBtn" class="active">Dark</button>
+      <button id="lightBtn">Light</button>
+    </div>
+  </div>
+</aside>
+
+<div id="main">
+  <header>
+    <div class="left">
+      <button id="sidebarToggle">☰</button>
       <div>
-        <h1>TechCorp — Assistant Financier</h1>
+        <h1>Assistant Financier</h1>
         <div class="ticker">Phi-3.5 · Finance &amp; Investissement</div>
       </div>
-      <div id="status" class="disconnected">
-        <span class="dot"></span>
-        <span class="label">Vérification…</span>
-      </div>
-    </header>
+    </div>
+    <div id="status" class="disconnected">
+      <span class="dot"></span>
+      <span class="label">Vérification…</span>
+    </div>
+  </header>
 
-    <main id="chat">
-      <div class="empty-state" id="emptyState">
-        <div class="mark">§</div>
-        <p>
-          Posez une question sur l'investissement, le budget, les marchés ou la
-          finance d'entreprise.
-        </p>
-      </div>
-    </main>
+  <main id="chat">
+    <div class="inner" id="chatInner"></div>
+  </main>
 
-    <footer>
-      <form id="chatForm">
-        <textarea
-          id="input"
-          placeholder="Écrivez votre message…"
-          rows="1"
-        ></textarea>
-        <button type="submit" id="sendBtn">Envoyer</button>
-      </form>
-    </footer>
+  <footer>
+    <form id="chatForm">
+      <textarea id="input" placeholder="Écrivez votre message…" rows="1"></textarea>
+      <button type="submit" class="send" id="sendBtn">Envoyer</button>
+    </form>
+  </footer>
+</div>
 
-    <script>
-      const chat = document.getElementById("chat");
-      const form = document.getElementById("chatForm");
-      const input = document.getElementById("input");
-      const sendBtn = document.getElementById("sendBtn");
-      const statusEl = document.getElementById("status");
-      const emptyState = document.getElementById("emptyState");
+<script>
+const STORAGE_KEY = 'techcorp_conversations';
 
-      let history = [];
+const chatInner = document.getElementById('chatInner');
+const chatMain = document.getElementById('chat');
+const form = document.getElementById('chatForm');
+const input = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
+const statusEl = document.getElementById('status');
+const convList = document.getElementById('convList');
+const sidebar = document.getElementById('sidebar');
 
-      function setStatus(connected) {
-        statusEl.className = connected ? "connected" : "disconnected";
-        statusEl.querySelector(".label").textContent = connected
-          ? "Connecté"
-          : "Déconnecté";
-      }
+let conversations = loadConversations();
+let activeId = null;
 
-      async function checkStatus() {
-        try {
-          const res = await fetch("/api/status");
-          const data = await res.json();
-          setStatus(!!data.connected);
-        } catch (e) {
-          setStatus(false);
-        }
-      }
+// ---------- Persistence ----------
+function loadConversations() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
 
-      function addMessage(role, content, isError = false) {
-        emptyState.remove();
-        const div = document.createElement("div");
-        div.className = `msg ${role}${isError ? " error" : ""}`;
-        div.innerHTML = `
-    <span class="tag">${role === "user" ? "Vous" : "Assistant"}</span>
-    <div class="bubble"></div>
-  `;
-        div.querySelector(".bubble").textContent = content;
-        chat.appendChild(div);
-        chat.scrollTop = chat.scrollHeight;
-        return div;
-      }
+function saveConversations() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+}
 
-      function addThinking() {
-        const div = document.createElement("div");
-        div.className = "thinking";
-        div.id = "thinkingIndicator";
-        div.textContent = "Réflexion en cours";
-        chat.appendChild(div);
-        chat.scrollTop = chat.scrollHeight;
-      }
+function newId() {
+  return 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+}
 
-      function removeThinking() {
-        document.getElementById("thinkingIndicator")?.remove();
-      }
+// ---------- Conversation management ----------
+function createConversation() {
+  const conv = { id: newId(), title: 'Nouvelle conversation', messages: [], createdAt: Date.now() };
+  conversations.unshift(conv);
+  activeId = conv.id;
+  saveConversations();
+  renderSidebar();
+  renderChat();
+  input.focus();
+}
 
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const text = input.value.trim();
-        if (!text) return;
+function deleteConversation(id, evt) {
+  evt.stopPropagation();
+  conversations = conversations.filter(c => c.id !== id);
+  saveConversations();
+  if (activeId === id) {
+    activeId = conversations.length ? conversations[0].id : null;
+    if (!activeId) createConversation();
+  }
+  renderSidebar();
+  renderChat();
+}
 
-        addMessage("user", text);
-        history.push({ role: "user", content: text });
-        input.value = "";
-        input.style.height = "46px";
-        sendBtn.disabled = true;
-        addThinking();
+function selectConversation(id) {
+  activeId = id;
+  renderSidebar();
+  renderChat();
+}
 
-        try {
-          const res = await fetch("/api/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ messages: history }),
-          });
-          const data = await res.json();
-          removeThinking();
+function getActive() {
+  return conversations.find(c => c.id === activeId);
+}
 
-          if (!res.ok || data.error) {
-            addMessage("assistant", data.error || "Erreur inconnue.", true);
-            setStatus(false);
-          } else {
-            addMessage("assistant", data.content);
-            history.push({ role: "assistant", content: data.content });
-            setStatus(true);
-          }
-        } catch (err) {
-          removeThinking();
-          addMessage("assistant", "Connexion au serveur impossible.", true);
-          setStatus(false);
-        } finally {
-          sendBtn.disabled = false;
-          input.focus();
-        }
-      });
+function updateTitleFromFirstMessage(conv) {
+  if (conv.title === 'Nouvelle conversation' && conv.messages.length > 0) {
+    const first = conv.messages[0].content;
+    conv.title = first.length > 38 ? first.slice(0, 38) + '…' : first;
+  }
+}
 
-      input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          form.requestSubmit();
-        }
-      });
+// ---------- Rendering ----------
+function renderSidebar() {
+  convList.innerHTML = '';
+  if (conversations.length === 0) return;
+  const label = document.createElement('div');
+  label.className = 'conv-section-label';
+  label.textContent = 'Conversations';
+  convList.appendChild(label);
 
-      input.addEventListener("input", () => {
-        input.style.height = "46px";
-        input.style.height = Math.min(input.scrollHeight, 140) + "px";
-      });
+  conversations.forEach(conv => {
+    const item = document.createElement('div');
+    item.className = 'conv-item' + (conv.id === activeId ? ' active' : '');
+    item.innerHTML = `<span class="conv-title"></span><button class="conv-delete" title="Supprimer">✕</button>`;
+    item.querySelector('.conv-title').textContent = conv.title;
+    item.addEventListener('click', () => selectConversation(conv.id));
+    item.querySelector('.conv-delete').addEventListener('click', (e) => deleteConversation(conv.id, e));
+    convList.appendChild(item);
+  });
+}
 
-      checkStatus();
-      setInterval(checkStatus, 8000);
-    </script>
-  </body>
+const SUGGESTIONS = [
+  "Comment créer un budget mensuel ?",
+  "Explique-moi l'intérêt composé",
+  "Risques des cryptomonnaies",
+  "Qu'est-ce qu'un ratio P/E ?",
+];
+
+function renderChat() {
+  chatInner.innerHTML = '';
+  const conv = getActive();
+
+  if (!conv || conv.messages.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.innerHTML = `
+      <div class="mark">§</div>
+      <p>Posez une question sur l'investissement, le budget, les marchés ou la finance d'entreprise.</p>
+      <div class="suggestions">${SUGGESTIONS.map(s => `<button class="suggestion-chip">${s}</button>`).join('')}</div>
+    `;
+    chatInner.appendChild(empty);
+    chatInner.querySelectorAll('.suggestion-chip').forEach(btn => {
+      btn.addEventListener('click', () => { input.value = btn.textContent; form.requestSubmit(); });
+    });
+    chatMain.style.justifyContent = 'center';
+    return;
+  }
+
+  chatMain.style.justifyContent = 'flex-start';
+  conv.messages.forEach(m => renderMessage(m.role, m.content, m.error));
+  chatMain.scrollTop = chatMain.scrollHeight;
+}
+
+function renderMessage(role, content, isError = false) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}${isError ? ' error' : ''}`;
+  div.innerHTML = `<span class="tag">${role === 'user' ? 'Vous' : 'Assistant'}</span><div class="bubble"></div>`;
+  div.querySelector('.bubble').textContent = content;
+  chatInner.appendChild(div);
+  return div;
+}
+
+function addThinking() {
+  const div = document.createElement('div');
+  div.className = 'thinking';
+  div.id = 'thinkingIndicator';
+  div.textContent = 'Réflexion en cours';
+  chatInner.appendChild(div);
+  chatMain.scrollTop = chatMain.scrollHeight;
+}
+
+function removeThinking() {
+  document.getElementById('thinkingIndicator')?.remove();
+}
+
+// ---------- Status ----------
+function setStatus(connected) {
+  statusEl.className = connected ? 'connected' : 'disconnected';
+  statusEl.querySelector('.label').textContent = connected ? 'Connecté' : 'Déconnecté';
+}
+
+async function checkStatus() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    setStatus(!!data.connected);
+  } catch (e) { setStatus(false); }
+}
+
+// ---------- Chat submission ----------
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+
+  let conv = getActive();
+  if (!conv) { createConversation(); conv = getActive(); }
+
+  conv.messages.push({ role: 'user', content: text });
+  updateTitleFromFirstMessage(conv);
+  saveConversations();
+  renderSidebar();
+  renderChat();
+
+  input.value = '';
+  input.style.height = '46px';
+  sendBtn.disabled = true;
+  addThinking();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: conv.messages.map(m => ({ role: m.role, content: m.content })) }),
+    });
+    const data = await res.json();
+    removeThinking();
+
+    if (!res.ok || data.error) {
+      conv.messages.push({ role: 'assistant', content: data.error || 'Erreur inconnue.', error: true });
+      setStatus(false);
+    } else {
+      conv.messages.push({ role: 'assistant', content: data.content });
+      setStatus(true);
+    }
+    saveConversations();
+    renderChat();
+  } catch (err) {
+    removeThinking();
+    conv.messages.push({ role: 'assistant', content: 'Connexion au serveur impossible.', error: true });
+    saveConversations();
+    renderChat();
+    setStatus(false);
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
+  }
+});
+
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+});
+
+input.addEventListener('input', () => {
+  input.style.height = '46px';
+  input.style.height = Math.min(input.scrollHeight, 140) + 'px';
+});
+
+// ---------- Sidebar toggle ----------
+document.getElementById('sidebarToggle').addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed');
+});
+
+document.getElementById('newChatBtn').addEventListener('click', createConversation);
+
+// ---------- Theme ----------
+const darkBtn = document.getElementById('darkBtn');
+const lightBtn = document.getElementById('lightBtn');
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.body.setAttribute('data-theme', theme);
+  localStorage.setItem('techcorp_theme', theme);
+  darkBtn.classList.toggle('active', theme === 'dark');
+  lightBtn.classList.toggle('active', theme === 'light');
+}
+
+darkBtn.addEventListener('click', () => setTheme('dark'));
+lightBtn.addEventListener('click', () => setTheme('light'));
+
+// ---------- Init ----------
+const savedTheme = localStorage.getItem('techcorp_theme') || 'dark';
+setTheme(savedTheme);
+
+if (conversations.length === 0) {
+  createConversation();
+} else {
+  activeId = conversations[0].id;
+}
+
+renderSidebar();
+renderChat();
+checkStatus();
+setInterval(checkStatus, 8000);
+</script>
+
+</body>
 </html>
