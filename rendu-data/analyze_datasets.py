@@ -67,6 +67,8 @@ def extract_text_fields(item):
         texts.append(str(item["question"]))
     if "answer" in item:
         texts.append(str(item["answer"]))
+    if "instruction" in item:
+        texts.append(str(item["instruction"]))
     if "input" in item:
         texts.append(str(item["input"]))
     if "output" in item:
@@ -78,10 +80,39 @@ def extract_text_fields(item):
     return texts
 
 
+def find_suspicious_fields(item):
+    """Retourne la liste des champs (nom de clé) contenant un pattern suspect, le cas échéant."""
+    field_map = {
+        "conversation": None,  # traité séparément ci-dessous
+        "question": item.get("question"),
+        "answer": item.get("answer"),
+        "instruction": item.get("instruction"),
+        "input": item.get("input"),
+        "output": item.get("output"),
+        "Patient": item.get("Patient"),
+        "Doctor": item.get("Doctor"),
+    }
+    matches = []
+    for field_name, value in field_map.items():
+        if value is None:
+            continue
+        text = str(value).lower()
+        if any(p.lower() in text for p in SUSPICIOUS_PATTERNS):
+            matches.append(field_name)
+
+    if "conversation" in item and isinstance(item["conversation"], list):
+        for turn in item["conversation"]:
+            if isinstance(turn, dict) and "content" in turn:
+                text = str(turn["content"]).lower()
+                if any(p.lower() in text for p in SUSPICIOUS_PATTERNS):
+                    matches.append("conversation.content")
+                    break
+
+    return matches
+
+
 def contains_suspicious(item):
-    texts = extract_text_fields(item)
-    full_text = " ".join(texts).lower()
-    return any(p.lower() in full_text for p in SUSPICIOUS_PATTERNS)
+    return len(find_suspicious_fields(item)) > 0
 
 
 def is_malformed(item):
@@ -139,10 +170,23 @@ def analyze_dataset(name, data):
     print(f"Doublons détectés : {len(duplicates)}")
 
     # Contenu suspect (cf. rapport CYBER)
-    suspicious = [i for i, item in enumerate(data) if isinstance(item, dict) and contains_suspicious(item)]
+    suspicious = []
+    suspicious_details = []
+    for i, item in enumerate(data):
+        if not isinstance(item, dict):
+            continue
+        fields = find_suspicious_fields(item)
+        if fields:
+            suspicious.append(i)
+            suspicious_details.append((i, fields))
+
     print(f"\n🔒 Exemples contenant un pattern suspect (trigger backdoor) : {len(suspicious)}")
-    if suspicious:
-        print(f"   Indices concernés : {suspicious[:20]}{'...' if len(suspicious) > 20 else ''}")
+    if suspicious_details:
+        print("   Détail (index → champ(s) concerné(s)) :")
+        for i, fields in suspicious_details[:20]:
+            print(f"     - exemple #{i} → champ(s) : {', '.join(fields)}")
+        if len(suspicious_details) > 20:
+            print(f"     ... et {len(suspicious_details) - 20} de plus")
         print("   ⚠️  CRITIQUE — voir rapport CYBER (rendu/cyber/RAPPORT_AUDIT.md)")
 
     return {
@@ -181,9 +225,6 @@ def main():
     if finance_analysis:
         clean_dataset(finance_data, finance_analysis, os.path.join(OUTPUT_DIR, "finance_dataset_cleaned.json"))
 
-    print(f"\n{'=' * 60}")
-    print("TERMINÉ — copie les chiffres ci-dessus dans rendu/data/RAPPORT_QUALITE.md")
-    print("=" * 60)
 
 
 if __name__ == "__main__":
