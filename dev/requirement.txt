@@ -1,0 +1,10 @@
+flask==3.0.3
+requests==2.32.3
+transformers==4.45.2
+accelerate==0.34.2
+peft==0.13.0
+datasets
+bitsandbytes
+sentencepiece
+einops
+torch
