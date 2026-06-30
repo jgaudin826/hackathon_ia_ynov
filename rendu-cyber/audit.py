@@ -5,13 +5,13 @@ Script de test automatisé contre l'API d'inférence (Ollama / Triton / serveur 
 
 Objectifs couverts :
   1. Audit du déploiement (endpoint exposé, auth, CORS)
-  2. Tests de robustesse / prompt injection / jailbreak sur Phi-3.5-Financial
+  2. Tests de robustesse / prompt injection / jailbreak sur Phi-35-Financial
   3. Validation de l'intégrité des réponses (cohérence, hallucination grossière)
   4. Tests de sécurité sur le modèle médical fine-tuné (LoRA)
   5. Détection de biais problématiques
 
 Usage :
-  python cyber_audit_tests.py --endpoint http://localhost:11434/api/generate --model phi3.5-financial --backend ollama
+  python audit.py --endpoint http://localhost:11434/api/generate --model phi35-financial --backend ollama
 """
 
 import argparse
