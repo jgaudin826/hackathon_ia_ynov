@@ -53,7 +53,6 @@ def chat():
                 "messages": messages,
                 "stream": False,
             },
-            timeout=120,
         )
         r.raise_for_status()
         result = r.json()
